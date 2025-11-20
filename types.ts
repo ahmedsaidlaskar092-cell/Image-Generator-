@@ -4,6 +4,13 @@ export enum AppMode {
   ANALYZE = 'ANALYZE',
 }
 
+export enum PageView {
+  TOOLS = 'TOOLS',
+  PROFILE = 'PROFILE',
+  SUBSCRIPTION = 'SUBSCRIPTION',
+  ADMIN = 'ADMIN',
+}
+
 export enum AspectRatio {
   SQUARE = '1:1',
   PORTRAIT = '3:4',
@@ -36,4 +43,39 @@ export interface Toast {
   id: string;
   message: string;
   type: ToastType;
+}
+
+export type UserRole = 'admin' | 'user';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  avatar?: string;
+  role: UserRole;
+  coins: number;
+  plan: string;
+  lastDailyReward?: number; // Timestamp of last reward
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  price: number;
+  coins: number;
+  features: string[];
+  recommended?: boolean;
+}
+
+export interface Transaction {
+  id: string;
+  userId: string;
+  userName: string;
+  planId: string;
+  planName: string;
+  amount: number;
+  coins: number;
+  utr: string; // UTR or Transaction Ref ID
+  status: 'pending' | 'approved' | 'rejected';
+  date: number;
 }

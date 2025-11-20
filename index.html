@@ -2,38 +2,70 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#030712" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Lumina AI Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         darkMode: 'class',
         theme: {
           extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Outfit', 'sans-serif'],
+            },
+            spacing: {
+              'safe-area': 'env(safe-area-inset-bottom)',
+            },
             colors: {
               primary: {
-                50: '#eff6ff',
-                100: '#dbeafe',
-                200: '#bfdbfe',
-                300: '#93c5fd',
-                400: '#60a5fa',
-                500: '#3b82f6',
-                600: '#2563eb',
-                700: '#1d4ed8',
-                800: '#1e40af',
-                900: '#1e3a8a',
-                950: '#172554',
+                50: '#f5f3ff',
+                100: '#ede9fe',
+                200: '#ddd6fe',
+                300: '#c4b5fd',
+                400: '#a78bfa',
+                500: '#8b5cf6',
+                600: '#7c3aed',
+                700: '#6d28d9',
+                800: '#5b21b6',
+                900: '#4c1d95',
+                950: '#2e1065',
+              },
+              accent: {
+                50: '#fdf2f8',
+                100: '#fce7f3',
+                200: '#fbcfe8',
+                300: '#f9a8d4',
+                400: '#f472b6',
+                500: '#ec4899',
+                600: '#db2777',
+                700: '#be185d',
+                800: '#9d174d',
+                900: '#831843',
+                950: '#500724',
               },
               dark: {
-                bg: '#0f172a',
-                surface: '#1e293b',
-                border: '#334155',
+                bg: '#030712',       /* Very dark blue/black */
+                surface: '#111827',  /* Dark gray/blue */
+                border: '#1f2937',
               }
             },
             animation: {
-              'fade-in': 'fadeIn 0.5s ease-out',
-              'slide-up': 'slideUp 0.5s ease-out',
+              'fade-in': 'fadeIn 0.6s ease-out forwards',
+              'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'slide-down': 'slideDown 0.5s ease-out forwards',
               'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'gradient-x': 'gradientX 15s ease infinite',
+              'float': 'float 6s ease-in-out infinite',
+              'scale-in': 'scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'scroll': 'scroll 40s linear infinite',
+              'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
             },
             keyframes: {
               fadeIn: {
@@ -44,29 +76,82 @@
                 '0%': { transform: 'translateY(20px)', opacity: '0' },
                 '100%': { transform: 'translateY(0)', opacity: '1' },
               },
+              slideDown: {
+                '0%': { transform: 'translateY(-20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              },
+              scaleIn: {
+                '0%': { transform: 'scale(0.9)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' },
+              },
+              gradientX: {
+                '0%, 100%': {
+                  'background-size': '200% 200%',
+                  'background-position': 'left center'
+                },
+                '50%': {
+                  'background-size': '200% 200%',
+                  'background-position': 'right center'
+                },
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
+              },
+              scroll: {
+                '0%': { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' },
+              },
+              shake: {
+                '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+                '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+                '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
+              }
             },
           },
         },
       }
     </script>
     <style>
+      html {
+        scroll-behavior: smooth;
+        -webkit-tap-highlight-color: transparent;
+      }
       /* Custom scrollbar for cleaner look */
       ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
       }
       ::-webkit-scrollbar-track {
         background: transparent; 
       }
       ::-webkit-scrollbar-thumb {
         background: #cbd5e1; 
-        border-radius: 4px;
+        border-radius: 10px;
       }
       .dark ::-webkit-scrollbar-thumb {
-        background: #475569; 
+        background: #374151; 
       }
       ::-webkit-scrollbar-thumb:hover {
         background: #94a3b8; 
+      }
+      
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .dark .glass-panel {
+        background: rgba(17, 24, 39, 0.7);
+      }
+      
+      .letter-spacing-2 {
+        letter-spacing: 0.2em;
+      }
+      
+      .pb-safe-area {
+        padding-bottom: env(safe-area-inset-bottom);
       }
     </style>
   <script type="importmap">
@@ -82,7 +167,7 @@
 }
 </script>
 </head>
-  <body class="bg-gray-50 text-slate-900 dark:bg-dark-bg dark:text-slate-100 transition-colors duration-300 min-h-screen selection:bg-primary-500 selection:text-white">
+  <body class="bg-gray-50 text-slate-900 dark:bg-dark-bg dark:text-slate-100 transition-colors duration-500 min-h-screen selection:bg-primary-500 selection:text-white font-sans overflow-x-hidden">
     <div id="root"></div>
   </body>
 </html>

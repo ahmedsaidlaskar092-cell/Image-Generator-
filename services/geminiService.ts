@@ -50,7 +50,7 @@ export const generateImage = async (prompt: string, aspectRatio: AspectRatio): P
 /**
  * Edit an image using gemini-2.5-flash-image
  */
-export const editImage = async (originalImageBase64: string, prompt: string): Promise<string> => {
+export const editImage = async (originalImageBase64: string, imageType: string, prompt: string): Promise<string> => {
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
@@ -59,7 +59,7 @@ export const editImage = async (originalImageBase64: string, prompt: string): Pr
           {
             inlineData: {
               data: originalImageBase64,
-              mimeType: 'image/jpeg', // Assuming JPEG for simplicity, though input might vary. Ideally detect.
+              mimeType: imageType, 
             },
           },
           {
@@ -92,7 +92,7 @@ export const editImage = async (originalImageBase64: string, prompt: string): Pr
 /**
  * Analyze an image using gemini-3-pro-preview
  */
-export const analyzeImage = async (imageBase64: string, prompt: string): Promise<string> => {
+export const analyzeImage = async (imageBase64: string, imageType: string, prompt: string): Promise<string> => {
   try {
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
@@ -100,7 +100,7 @@ export const analyzeImage = async (imageBase64: string, prompt: string): Promise
         parts: [
           {
             inlineData: {
-              mimeType: 'image/jpeg', // Broad assumption for uploaded files, but generally safe for base64 generic containers if we strip prefix
+              mimeType: imageType,
               data: imageBase64,
             },
           },
