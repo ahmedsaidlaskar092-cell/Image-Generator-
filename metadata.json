@@ -1,0 +1,5 @@
+{
+  "name": "Lumina AI Studio",
+  "description": "A comprehensive AI-powered image studio. Generate high-quality images with Imagen 4, edit photos with natural language using Gemini 2.5 Flash, and analyze visuals with Gemini 3 Pro.",
+  "requestFramePermissions": []
+}
