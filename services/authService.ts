@@ -12,12 +12,12 @@ export const authService = {
     
     const users = storeService.getUsers();
     
-    // Updated Hardcoded Admin Check
+    // Hardcoded Admin Check
     // Credentials: mrattitude885@gmail.com / Ahmed@43211@
     if (email === 'mrattitude885@gmail.com' && password === 'Ahmed@43211@') {
       const admin = users.find(u => u.email === email);
       if (admin) {
-        localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(admin));
+        storeService.setItem(STORAGE_KEY_SESSION, JSON.stringify(admin));
         return admin;
       }
     }
@@ -30,7 +30,7 @@ export const authService = {
 
     // Remove password from session object
     const { password: _, ...userWithoutPassword } = user as any;
-    localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(userWithoutPassword));
+    storeService.setItem(STORAGE_KEY_SESSION, JSON.stringify(userWithoutPassword));
     return userWithoutPassword;
   },
 
@@ -56,25 +56,29 @@ export const authService = {
     };
 
     users.push(newUser);
-    localStorage.setItem('lumina_users', JSON.stringify(users));
+    storeService.setItem('lumina_users', JSON.stringify(users));
     
     const { password: _, ...userWithoutPassword } = newUser;
-    localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(userWithoutPassword));
+    storeService.setItem(STORAGE_KEY_SESSION, JSON.stringify(userWithoutPassword));
     return userWithoutPassword;
   },
 
   async logout(): Promise<void> {
     await delay(500);
-    localStorage.removeItem(STORAGE_KEY_SESSION);
+    storeService.removeItem(STORAGE_KEY_SESSION);
   },
 
   getCurrentUser(): User | null {
-    const sessionStr = localStorage.getItem(STORAGE_KEY_SESSION);
+    const sessionStr = storeService.getItem(STORAGE_KEY_SESSION);
     if (!sessionStr) return null;
     
-    const sessionUser = JSON.parse(sessionStr);
-    // Always fetch fresh data from store to get latest coins/plan
-    const freshUser = storeService.getUserById(sessionUser.id);
-    return freshUser || null;
+    try {
+      const sessionUser = JSON.parse(sessionStr);
+      // Always fetch fresh data from store to get latest coins/plan
+      const freshUser = storeService.getUserById(sessionUser.id);
+      return freshUser || null;
+    } catch (e) {
+      return null;
+    }
   }
 };

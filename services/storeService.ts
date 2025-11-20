@@ -35,18 +35,63 @@ export const PLANS: Plan[] = [
   },
 ];
 
+// --- ROBUST STORAGE HANDLING ---
+
+// In-memory fallback store in case localStorage is blocked or unavailable
+const memoryStore: Record<string, string> = {};
+
+// Check if localStorage is available and working
+const isStorageAvailable = (): boolean => {
+  try {
+    if (typeof localStorage === 'undefined') return false;
+    const testKey = '__storage_test__';
+    localStorage.setItem(testKey, testKey);
+    localStorage.removeItem(testKey);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+const canUseStorage = isStorageAvailable();
+
+// Helper to set item safely
+const setItem = (key: string, value: string) => {
+  if (canUseStorage) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.warn('LocalStorage set failed, using memory store', e);
+      memoryStore[key] = value;
+    }
+  } else {
+    memoryStore[key] = value;
+  }
+};
+
+// Helper to get item safely
+const getItem = (key: string): string | null => {
+  if (canUseStorage) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return memoryStore[key] || null;
+    }
+  }
+  return memoryStore[key] || null;
+};
+
 // Safe JSON parse helper
 const safeParse = <T>(key: string, fallback: T): T => {
   try {
-    if (typeof localStorage === 'undefined') return fallback;
-    const item = localStorage.getItem(key);
+    const item = getItem(key);
     return item ? JSON.parse(item) : fallback;
   } catch (error) {
-    console.error(`Error parsing ${key} from localStorage:`, error);
-    // If corrupted, clear it to prevent persistent crashes
-    try {
-      localStorage.removeItem(key);
-    } catch (e) {}
+    console.error(`Error parsing ${key}:`, error);
+    // If corrupted, attempt to clear
+    if (canUseStorage) {
+      try { localStorage.removeItem(key); } catch(e) {}
+    }
     return fallback;
   }
 };
@@ -54,8 +99,6 @@ const safeParse = <T>(key: string, fallback: T): T => {
 // Initialize default admin if not exists
 const initStore = () => {
   try {
-    if (typeof localStorage === 'undefined') return;
-
     const users = safeParse<User[]>(STORAGE_KEY_USERS, []);
     
     const adminEmail = 'mrattitude885@gmail.com';
@@ -77,7 +120,7 @@ const initStore = () => {
       const cleanedUsers = users.filter(u => u.role !== 'admin'); 
       cleanedUsers.push(adminUser);
       
-      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(cleanedUsers));
+      setItem(STORAGE_KEY_USERS, JSON.stringify(cleanedUsers));
     }
   } catch (error) {
     console.error("Failed to initialize store:", error);
@@ -102,7 +145,7 @@ export const storeService = {
     const index = users.findIndex(u => u.id === updatedUser.id);
     if (index !== -1) {
       users[index] = updatedUser;
-      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+      setItem(STORAGE_KEY_USERS, JSON.stringify(users));
     }
   },
 
@@ -176,7 +219,7 @@ export const storeService = {
       date: Date.now(),
     };
     transactions.push(newTx);
-    localStorage.setItem(STORAGE_KEY_TRANSACTIONS, JSON.stringify(transactions));
+    setItem(STORAGE_KEY_TRANSACTIONS, JSON.stringify(transactions));
     return newTx;
   },
 
@@ -186,11 +229,21 @@ export const storeService = {
     
     if (tx && tx.status === 'pending') {
       tx.status = status;
-      localStorage.setItem(STORAGE_KEY_TRANSACTIONS, JSON.stringify(transactions));
+      setItem(STORAGE_KEY_TRANSACTIONS, JSON.stringify(transactions));
 
       if (status === 'approved') {
         storeService.addCoins(tx.userId, tx.coins);
       }
     }
   },
+
+  // Expose for Auth Service
+  setItem: setItem,
+  getItem: getItem,
+  removeItem: (key: string) => {
+    if(canUseStorage) {
+      try { localStorage.removeItem(key); } catch(e) {}
+    }
+    delete memoryStore[key];
+  }
 };
