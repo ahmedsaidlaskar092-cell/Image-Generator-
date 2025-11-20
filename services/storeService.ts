@@ -38,44 +38,53 @@ export const PLANS: Plan[] = [
 // Safe JSON parse helper
 const safeParse = <T>(key: string, fallback: T): T => {
   try {
+    if (typeof localStorage === 'undefined') return fallback;
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : fallback;
   } catch (error) {
     console.error(`Error parsing ${key} from localStorage:`, error);
     // If corrupted, clear it to prevent persistent crashes
-    localStorage.removeItem(key);
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {}
     return fallback;
   }
 };
 
 // Initialize default admin if not exists
 const initStore = () => {
-  const users = safeParse<User[]>(STORAGE_KEY_USERS, []);
-  
-  const adminEmail = 'mrattitude885@gmail.com';
-  const adminExists = users.some(u => u.email === adminEmail);
+  try {
+    if (typeof localStorage === 'undefined') return;
 
-  if (!adminExists) {
-    const adminUser: User = {
-      id: 'admin_001',
-      name: 'Super Admin',
-      email: adminEmail,
-      role: 'admin',
-      coins: 99999,
-      plan: 'infinite',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin',
-      lastDailyReward: Date.now(),
-    };
+    const users = safeParse<User[]>(STORAGE_KEY_USERS, []);
     
-    // Clean up any old test admins or duplicates if necessary
-    const cleanedUsers = users.filter(u => u.role !== 'admin'); 
-    cleanedUsers.push(adminUser);
-    
-    localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(cleanedUsers));
+    const adminEmail = 'mrattitude885@gmail.com';
+    const adminExists = users.some(u => u.email === adminEmail);
+
+    if (!adminExists) {
+      const adminUser: User = {
+        id: 'admin_001',
+        name: 'Super Admin',
+        email: adminEmail,
+        role: 'admin',
+        coins: 99999,
+        plan: 'infinite',
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin',
+        lastDailyReward: Date.now(),
+      };
+      
+      // Clean up any old test admins or duplicates if necessary
+      const cleanedUsers = users.filter(u => u.role !== 'admin'); 
+      cleanedUsers.push(adminUser);
+      
+      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(cleanedUsers));
+    }
+  } catch (error) {
+    console.error("Failed to initialize store:", error);
   }
 };
 
-// Run initialization
+// Run initialization safely
 initStore();
 
 export const storeService = {

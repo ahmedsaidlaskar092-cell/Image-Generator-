@@ -1,8 +1,23 @@
 import { GoogleGenAI, Modality, GenerateContentResponse } from "@google/genai";
 import { AspectRatio } from "../types";
 
-// Initialize the client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Lazy initialization of the client
+let aiInstance: GoogleGenAI | null = null;
+
+const getAiClient = (): GoogleGenAI => {
+  if (!aiInstance) {
+    // Safe access to process.env to prevent ReferenceError in some browser environments
+    const apiKey = (typeof process !== 'undefined' && process.env && process.env.API_KEY) 
+      ? process.env.API_KEY 
+      : '';
+      
+    if (!apiKey) {
+      console.warn("API Key is missing. AI features will fail.");
+    }
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+};
 
 /**
  * Helper to convert a File object to a base64 string (without the data URL prefix)
@@ -26,6 +41,7 @@ export const fileToBase64 = (file: File): Promise<string> => {
  */
 export const generateImage = async (prompt: string, aspectRatio: AspectRatio): Promise<string> => {
   try {
+    const ai = getAiClient();
     const response = await ai.models.generateImages({
       model: 'imagen-4.0-generate-001',
       prompt: prompt,
@@ -41,9 +57,9 @@ export const generateImage = async (prompt: string, aspectRatio: AspectRatio): P
       throw new Error("No image generated");
     }
     return `data:image/jpeg;base64,${base64ImageBytes}`;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating image:", error);
-    throw error;
+    throw new Error(error.message || "Image generation failed");
   }
 };
 
@@ -52,6 +68,7 @@ export const generateImage = async (prompt: string, aspectRatio: AspectRatio): P
  */
 export const editImage = async (originalImageBase64: string, imageType: string, prompt: string): Promise<string> => {
   try {
+    const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: {
@@ -83,9 +100,9 @@ export const editImage = async (originalImageBase64: string, imageType: string, 
     }
     
     throw new Error("No image data found in response");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error editing image:", error);
-    throw error;
+    throw new Error(error.message || "Image editing failed");
   }
 };
 
@@ -94,6 +111,7 @@ export const editImage = async (originalImageBase64: string, imageType: string, 
  */
 export const analyzeImage = async (imageBase64: string, imageType: string, prompt: string): Promise<string> => {
   try {
+    const ai = getAiClient();
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: {
@@ -112,8 +130,8 @@ export const analyzeImage = async (imageBase64: string, imageType: string, promp
     });
 
     return response.text || "No analysis available.";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error analyzing image:", error);
-    throw error;
+    throw new Error(error.message || "Analysis failed");
   }
 };
